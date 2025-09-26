@@ -3,7 +3,11 @@ const overview = document.querySelector(".overview");
 // My user name
 const username = "bwefler";
 // Select the unordered list to display the repos list
-const repoList = document.querySelector(".repo-list");
+const repoListSection = document.querySelector(".repo-list");
+// Section where repo info appears
+const repoInfoSection = document.querySelector(".repos");
+// Section where repo data appears
+const repoDataSection = document.querySelector(".repo-data");
 
 // Async function to fetch information from GitHub profile 
 // using the GitHub API address
@@ -21,24 +25,24 @@ const fetchInfo = async function () {
 
     // Call the function displaying the user information,
     // passing the JSON data as an argument.
-    displayFetchedInfo(response);
+    displayUserInfo(response);
 };
 fetchInfo();
 
 // Display the fetched user information on the page. 
-const displayFetchedInfo = function (json) {
+const displayUserInfo = function (json) {
     // (Testing access to JSON elements)
     // console.log(`Name: ${json.name}`);
 
     // Create a new div and give it a class of “user-info”. 
-    const userInfo = document.createElement("div");
-    userInfo.classList.add("user-info");
+    const userInfoDiv = document.createElement("div");
+    userInfoDiv.classList.add("user-info");
 
     // Populate the div with elements for 
     // figure, image, and paragraphs
     // Use the JSON data to grab the relevant properties 
     // to display on the page.
-    userInfo.innerHTML = `
+    userInfoDiv.innerHTML = `
         <figure>
           <img alt="user avatar" src=${json.avatar_url} />
         </figure>
@@ -47,11 +51,11 @@ const displayFetchedInfo = function (json) {
           <p><strong>Bio:</strong> ${json.bio}</p>
           <p><strong>Location:</strong> ${json.location}</p>
           <p><strong>Number of public repos:</strong> ${json.public_repos}</p>
-        </div>`; 
+        </div>`;
 
     // Append the div to the overview element.
     const overviewElement = document.querySelector(".overview");
-    overviewElement.append(userInfo);
+    overviewElement.append(userInfoDiv);
 
     // Fetch repos
     gitRepos();
@@ -60,15 +64,15 @@ const displayFetchedInfo = function (json) {
 // Async function to fetch repos
 const gitRepos = async function () {
     // console.log("### Per page ###");
-    const fetchRepos = await 
+    const fetchRepos = await
         fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
     // console.log(fetchRepos);
 
     // Resolve the JSON response. 
     // console.log("### Awaiting fetchRepos.json ###");
     const repoData = await fetchRepos.json();
-    console.log("### repoData:"); // ###
-    console.log(repoData); // ###
+    console.log("### repoData:");
+    console.log(repoData);
 
     // Display info about each repo
     displayRepoInfo(repoData);
@@ -77,21 +81,91 @@ const gitRepos = async function () {
 // Display information about each repo
 const displayRepoInfo = function (repos) {
     // Create a list item for each repo
-    for (let repo in repos) {
-        let repoListItem = document.createElement("li");
+    for (const repo in repos) {
+        const repoListItem = document.createElement("li");
         repoListItem.classList.add("repo");
-        
+
         // Give each list item a class of "repo" and an <h3> element 
         // with the repo name
-        let repoName = document.createElement("h3");
-        console.log(repos[repo].name);
-        repoName.innerText = repos[repo].name;
-        console.log(`### repoName ###`);
-        console.log(`${repoName.innerText}`);
-        
         // Append the list item to the global variable that selects
         // the unordered repos list
-        repoListItem.append(repos[repo].name);
-        repoList.append(repoListItem);
+        repoListItem.innerHTML = `<h2>${repos[repo].name}</h2>`
+        repoListSection.append(repoListItem);
     }
+}
+
+// Event listener for a click event on the unordered list with a 
+// class of “repo-list”
+repoListSection.addEventListener("click", function (e) {
+    // Check if the event target matches the <h3> element
+    console.log("### ###");
+    console.log(e.target);
+    console.log(e.target.outerHTML);
+    console.log("### ###");
+
+    if (e.target.matches("h2")) {
+        // console.log(e.target);
+        repoName = e.target.innerText;
+        // console.log(repoName);
+        getRepoInfo(repoName);
+    }
+});
+
+// Get specific repo information
+const getRepoInfo = async function(repoName) {
+    const fetchRepoInfo = await
+        fetch(`https://api.github.com/repos/${username}/${repoName}`);
+    const repoInfo = await fetchRepoInfo.json();
+    console.log(repoInfo);
+
+    // Fetch data from language_url property of repoInfo
+    console.log("### repoInfo.languages_url");
+    console.log(repoInfo.languages_url);
+    const fetchLanguages = await fetch(repoInfo.languages_url); // ,,,
+    // Save JSON response
+    const languageData = await fetchLanguages.json(); // ,,,
+    console.log("### languageData");
+    console.log(languageData);
+    // Add each language to an empty array called languages. 
+    // Hint: Loop through languageData and 
+    // add the languages to the end of the array.
+    const languages = [];
+    for (let lingo in languageData) {
+        console.log("### lingo:");
+        console.log(lingo);
+        languages.push(lingo);
+    }
+    console.log("### languages:");
+    for (let i of languages) {
+        console.log(`language: ${i}`);
+    }
+
+    displaySpecificInfo(repoInfo, languages);
+};
+
+// Display the specific repo information
+const displaySpecificInfo = function (repoInfo, languages) {
+    // Empty the HTML of the section with a class of 
+    // “repo-data” where the individual repo data appears.
+    repoDataSection.innerHTML = "";
+    // Create a new div element and add the selected repo’s name, 
+    // description, default branch, and link to its code on GitHub.
+    // Use the properties from the object you retrieved when you 
+    // fetched the specific repos.
+    // Use the URL to the repo on GitHub, not the repo’s API address. 
+    const repoInfoDiv = document.createElement("div");
+    repoInfoDiv.innerHTML = `
+        <h3>Name: ${repoInfo.name}</h3>
+        <p>Description: ${repoInfo.description}</p>
+        <p>Default Branch: ${repoInfo.default_branch}</p>
+        <p>Languages: ${languages.join(", ")}</p>
+        <a class="visit" href="${repoInfo.svn_url}" target="_blank" 
+            rel="noreferrer noopener">View Repo on GitHub!</a>`;
+    
+    // Append new div element to the section with class of “repo-data”.
+    repoDataSection.append(repoInfoDiv);
+    // Unhide the “repo-data” element. 
+    // Hide the element with the class of “repos”.
+    repoDataSection.classList.remove("hide");
+    repoInfoSection.classList.add("hide");
 }
