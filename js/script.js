@@ -8,6 +8,11 @@ const repoListSection = document.querySelector(".repo-list");
 const repoInfoSection = document.querySelector(".repos");
 // Section where repo data appears
 const repoDataSection = document.querySelector(".repo-data");
+// "Back to Repo Gallery" button
+const backToGalleryButton = document.querySelector(".view-repos");
+// "Search by name" placeholder
+const filterInput = document.querySelector(".filter-repos");
+
 
 // Async function to fetch information from GitHub profile 
 // using the GitHub API address
@@ -80,6 +85,11 @@ const gitRepos = async function () {
 
 // Display information about each repo
 const displayRepoInfo = function (repos) {
+
+    // At the top of the function that displays all your repos, 
+    // show the filterInput element.
+    filterInput.classList.remove("hide");
+
     // Create a list item for each repo
     for (const repo in repos) {
         const repoListItem = document.createElement("li");
@@ -168,4 +178,65 @@ const displaySpecificInfo = function (repoInfo, languages) {
     // Hide the element with the class of “repos”.
     repoDataSection.classList.remove("hide");
     repoInfoSection.classList.add("hide");
+    // In the function responsible for displaying the individual 
+    // repo information, remove the class of “hide” from the 
+    // Back to Repo Gallery button. 
+    backToGalleryButton.classList.remove("hide");
+    /* Now the user will see the Back to Repo Gallery button when 
+    they click on a repo name. 
+    When they click on the back button, they’ll return to the 
+    complete list of repos. 
+    The individual repo information and the back button will then 
+    disappear. */
 }
+
+// Event listener for "Back to Repo Gallery" button
+backToGalleryButton.addEventListener ("click", function (e) {
+    // Display "repos" class section
+    repoInfoSection.classList.remove("hide");
+    // Hide individual repo data section
+    // ### What's the diff. between repo info and repo data? ###
+    repoDataSection.classList.add("hide");
+    // Hide "Back to Repo Gallery" button
+    backToGalleryButton.classList.add("hide");
+});
+
+// Attach an "input" event listener to filterInput. 
+// Pass the event (e) the callback function
+filterInput.addEventListener("input", function (e) {
+    // Variable to capture the value of the search text.
+    let searchText = e.target.value; 
+    // Log out the variable and enter some text in the input 
+    // to ensure that you’ve successfully captured it.
+    console.log(`### Search text:`);
+    console.log(searchText);
+
+    // Select ALL elements on the page with "repo" class
+    repos = document.querySelectorAll(".repo");
+
+    // Create a variable and assign it to the lowercase value 
+    // of the search text. 
+    let searchTextLower = searchText.toLowerCase();
+    console.log(searchTextLower);
+    // Loop through each repo inside your repos element. 
+    // Inside the loop, create a variable and assign it to the 
+    // lowercase value of the innerText. of each repo.
+    console.log("### Loop thru repos");
+    for(repo of repos) { // ### Is thia correct for loop? ###
+        console.log("### repo inner text:")
+        const innerTextLower = repo.innerText.toLowerCase();
+        console.log(innerTextLower);
+
+        // See if the lowercase repo text includes the lowercase 
+        // search text. 
+        // If the repo contains the text, show it. 
+        // Otherwise hide the repo.
+        if (innerTextLower.includes(searchTextLower)) {
+            console.log(`### Display ${innerTextLower}`);
+            repo.classList.remove("hide");
+        } else {
+            console.log(`### Do not display ${innerTextLower}`);
+            repo.classList.add("hide");
+        }
+    }
+});
