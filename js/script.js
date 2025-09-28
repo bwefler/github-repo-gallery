@@ -93,9 +93,9 @@ const displayRepoInfo = function (repos) {
 
         // Give each list item a class of "repo" and an <h2>  
         // element with the repo name
+        repoListItem.innerHTML = `<h2>${repos[repo].name}</h2>`
         // Append the list item to the global variable that 
         // selects the unordered repos list
-        repoListItem.innerHTML = `<h2>${repos[repo].name}</h2>`
         repoListSection.append(repoListItem);
     }
 }
@@ -104,10 +104,8 @@ const displayRepoInfo = function (repos) {
 // class of “repo-list”
 repoListSection.addEventListener("click", function (e) {
     // Check if the event target matches the <h3> element
-    /// console.log("### ###");
     /// console.log(e.target);
     /// console.log(e.target.outerHTML);
-    /// console.log("### ###");
 
     if (e.target.matches("h2")) {
         /// console.log(e.target);
